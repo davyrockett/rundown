@@ -7,6 +7,10 @@ Secrets and variables → Actions; a missing one just leaves that part out):
     CAL_PERSONAL, CAL_RJ, CAL_US   private iCal links ("Secret address in iCal format" in Google Calendar)
     PCO_APP_ID, PCO_SECRET         a Planning Center personal access token (api.planningcenteronline.com)
 
+rundown-data is PUBLIC (David's choice), so data.json holds only what Rundown shows: event titles, times and
+locations (no descriptions), and Resounding Joy entries with client details stripped (clean_rj_title). The links
+and token stay secrets: they'd open the full calendars and The Crossing's Planning Center to anyone.
+
 Locally:  pip install icalendar recurring-ical-events
           python tools/build_data.py path/to/data.json
 """
@@ -15,6 +19,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
@@ -86,6 +91,19 @@ def read_calendar(source, start, end):
             "location": str(event.get("LOCATION", "")).strip().split("\n")[0],
         })
     return events
+
+
+# The data repo is public (David, 2026-10-21), so Resounding Joy entries go in without client details:
+# no locations (some are clients' homes), no client codes like "AbcDef" / "(AbcDef - G)", no initials.
+RJ_KEEP_SHORT = {"VA", "MK", "RJ", "SOS", "ARC", "MWC"}
+
+
+def clean_rj_title(title):
+    t = re.sub(r"\s*\([^)]*\)", "", title)                       # anything in brackets, e.g. "(AbcDef)"
+    t = re.sub(r"\b[A-Z][a-z]+[A-Z][a-z]+\b", "", t)                # client codes made of two name parts: AbcDef
+    t = re.sub(r"\b[A-Z]{2}\b", lambda m: m.group(0) if m.group(0) in RJ_KEEP_SHORT else "", t)  # initials like "AB CD"
+    t = re.sub(r"\s+", " ", t).strip(" :,-")
+    return t or "Session"
 
 
 # ---------- Planning Center (The Crossing) ----------
@@ -228,6 +246,9 @@ def main():
             continue
         names[key] = name
         for ev in found:
+            if key == "rj" and "uid" in ev:
+                ev["title"] = clean_rj_title(ev["title"])
+                ev["location"] = ""
             if key == "rj" and not ev["allDay"] and "uid" in ev:
                 ev_id = f"{ev['start'][:10]}-{hashlib.sha1((ev['uid'] + ev['start']).encode()).hexdigest()[:8]}"
                 rj_sessions.append({"id": ev_id, "title": ev["title"], "start": ev["start"], "end": ev["end"]})

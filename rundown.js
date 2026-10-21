@@ -1,8 +1,8 @@
 // Rundown (www.davyrockett.com/rundown/): David's dashboard. Started as a copy of the app suite's screen
 // (website repo, apps/launcher.js), so the icons, offline, updates, sharing and access key work the same.
 // Below the icons: time, weather, calendars, The Crossing (Planning Center), RJ sessions, gigs, practice,
-// Z4 to-dos and autocross. Calendar, Planning Center and autocross come from the private rundown-data repo,
-// which an hourly GitHub job there fills in; RJ ticks are saved to that repo too (ticks.json).
+// Z4 to-dos and autocross. Calendar, Planning Center and autocross come from the public rundown-data repo
+// (David doesn't share the link), which an hourly GitHub job there fills in; RJ ticks are saved there too.
 // - Tells the apps they were opened from here, so each shows an "All apps" button (suite.js in each app)
 //   that comes back here.
 // - "Make everything work offline": installs every app's own offline copy in one go.
@@ -696,8 +696,8 @@ async function loadWeather(force) {
   }
 }
 
-/* Calendars, The Crossing, RJ sessions and autocross: data.json in the private rundown-data repo, read with
-   the access key. RJ ticks are saved back there (ticks.json) so every device shows the same. */
+/* Calendars, The Crossing, RJ sessions and autocross: data.json in the public rundown-data repo (no key needed
+   to read it). RJ ticks are saved back there (ticks.json, needs the access key) so every device shows the same. */
 
 const DATA_REPO = `${OWNER}/rundown-data`;
 const DATA_KEY = 'rundown.data';            // last data.json read, plus when ({..., fetchedAt})
@@ -747,13 +747,25 @@ async function readFile(path, token) {
 }
 
 let dataLoading = false;
+// A public file from rundown-data. GitHub's copy can be up to 5 minutes behind.
+async function readPublic(path) {
+  let res;
+  try { res = await fetch(`https://raw.githubusercontent.com/${DATA_REPO}/main/${path}`, { cache: 'no-store' }); } catch { throw new Error('offline'); }
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('offline');
+  return { json: await res.json() };
+}
+
 async function loadData() {
-  const token = accessKey();
-  if (!token) { renderData(lsJSON(DATA_KEY, null)); return; }
   if (dataLoading) return;
   dataLoading = true;
   try {
-    const [data, ticks] = await Promise.all([readFile('data.json', token), readFile('ticks.json', token)]);
+    // Ticks through GitHub's API when there's a key: right after saving, the public copy is still the old one.
+    const token = accessKey();
+    const [data, ticks] = await Promise.all([
+      readPublic('data.json'),
+      (token ? readFile('ticks.json', token).catch(() => readPublic('ticks.json')) : readPublic('ticks.json')).catch(() => null),
+    ]);
     if (ticks) lsSet(TICKS_KEY, JSON.stringify(ticks.json));
     if (data) lsSet(DATA_KEY, JSON.stringify({ ...data.json, fetchedAt: Date.now() }));
     $('updated').textContent = '';
@@ -761,9 +773,7 @@ async function loadData() {
   } catch (e) {
     const saved = lsJSON(DATA_KEY, null);
     renderData(saved);
-    if (e.message === 'no-access') {
-      $('updated').textContent = 'Your access key can’t open rundown-data yet: add that repo to the key on GitHub.';
-    } else if (saved && saved.fetchedAt) {
+    if (saved && saved.fetchedAt) {
       $('updated').textContent = `Offline · calendar as of ${new Date(saved.fetchedAt).toLocaleString('en-US', { weekday: 'short', hour: 'numeric', minute: '2-digit' })}`;
     }
   } finally {
@@ -772,10 +782,7 @@ async function loadData() {
 }
 
 function renderData(data) {
-  if (!data) {
-    if (!accessKey()) $('cal').replaceChildren(el('p', 't-empty', 'Add your access key in Settings to see your calendars.'));
-    return;
-  }
+  if (!data) return;
   renderCalendar(data);
   renderCrossing(data.crossing);
   renderSessions(data.rjSessions || []);
@@ -961,6 +968,7 @@ function setTick(id, field, value) {
   renderSessions((lsJSON(DATA_KEY, {}) || {}).rjSessions || []);
   clearTimeout(pushTimer);
   pushTimer = setTimeout(pushTicks, 1200);
+  if (!accessKey()) $('updated').textContent = 'Ticks are saved on this device only until you add your access key in Settings.';
 }
 
 // Saves ticks made here into ticks.json, merged with whatever other devices saved.

@@ -74,17 +74,23 @@ one access key) work the same. If the Apps screen's shared parts change, conside
   in a browser both screens show the same ticks; they never change anything in the apps.
 - **Weather:** Open-Meteo (no key) for the **device's location** (David's choice); town name from BigDataCloud's
   free reverse geocoder. Kept in `rundown.weather` for offline / location off.
-- **Private data:** the **private** repo `davyrockett/rundown-data`. Its workflow `.github/workflows/update.yml`
+- **Data:** the repo `davyrockett/rundown-data`, **public** since 2026-10-21 (David: "we don't need to make any of this
+  stuff secret… I just won't share the link"). Rundown reads it with no key (raw.githubusercontent.com). Its workflow `.github/workflows/update.yml`
   runs hourly, checks out this repo and runs `tools/build_data.py` → `data.json` (commits only on change):
   - Calendars (David, 2026-10-21): Personal (`CAL_PERSONAL`), Resounding Joy = the imported "Calendar"
     (`CAL_RJ`), All Davy Rockett Gigs (public feed), David and RaeLynn (`CAL_US`). Secrets are private iCal links.
     Calendar times are Pacific wall-clock, shown as written. Event descriptions are never copied.
+    **Resounding Joy entries are cleaned** (David chose this when the repo went public): no locations (some are
+    clients' homes) and no client codes or initials (`clean_rj_title`). Never put real client codes or names in
+    this repo's code or notes either. The iCal links and Planning Center token stay GitHub **secrets**: they open
+    the full calendars (with notes) and The Crossing's Planning Center.
   - The Crossing: Planning Center Services via David's personal access token (`PCO_APP_ID`, `PCO_SECRET`): the next
     plan he's scheduled for (else the next plan he can see), times, his position/status, songs + keys, team members,
     and other requests waiting for his answer.
   - Autocross: MotorsportReg's calendar API (`/api/calendar/events/`, needs `radius=300` + `lat`/`lng`, no CORS, so
     it's fetched by the job, once a day) centred on San Diego; the app shows the next 5 within 150 miles.
-  The app reads `data.json` with the one access key (Rundown's own `rundown.sync-token`, else any syncing app's key).
+  Saving RJ ticks needs the one access key (Rundown's own `rundown.sync-token`, else any syncing app's key) with
+  write access to rundown-data; without it ticks stay on the device (`rundown.ticks-pending`).
 - **RJ sessions** (David, 2026-10-21: "have I billed for each, have I done the documentation for each"): every
   Resounding Joy calendar event in this pay period and last (1st–15th, 16th–end) with **Documented** / **Billed**
   ticks and "Not a session" (for check-ins, cancelled ones). Ticks are saved to `ticks.json` in rundown-data
@@ -94,5 +100,4 @@ one access key) work the same. If the Apps screen's shared parts change, conside
   (read by `suite.js`; the Apps screen sets `/apps/`).
 - Bump `VERSION` in `sw.js` on every change. Icon: `tools/make-icons.py` (checklist on the Apps off-white).
 - Local preview: `Start Rundown.command` (port 8777) builds a stand-in for www.davyrockett.com from the folders in
-  Claude Apps (website styles, other apps' icons). Calendar data needs the access key, so locally it's empty unless
-  you paste sample data into `localStorage['rundown.data']`.
+  Claude Apps (website styles, other apps' icons). It reads the live data.json from GitHub.
