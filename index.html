@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rundown · davyrockett</title>
+  <!-- David's dashboard: every app at the top, then his day at a glance (a copy of the Apps screen, www.davyrockett.com/apps/). Unlinked, not in search engines. -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="theme-color" content="#FBF8F4">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rundown">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Questrial&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body { min-height: 100vh; }
+    .top {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .top h1 { font-family: var(--head); font-size: 1.9rem; text-transform: lowercase; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--grey);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .icon-btn svg { width: 21px; height: 21px; }
+
+    /* Home-screen style: icon with its name underneath, no card around it. */
+    .grid {
+      list-style: none;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 16px 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+      gap: 26px 10px;
+    }
+    .tile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--ink);
+      font-size: .9rem;
+      text-align: center;
+      line-height: 1.2;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tile img {
+      width: 76px; height: 76px;
+      border-radius: 22%;
+      box-shadow: 0 4px 12px rgba(30, 20, 10, .18), 0 1px 3px rgba(30, 20, 10, .14);
+      transition: transform .12s ease;
+    }
+    .tile:hover img { transform: translateY(-2px); }
+    .tile:active img { transform: scale(.93); }
+    .tile:focus-visible { outline: none; }
+    .tile:focus-visible img { outline: 3px solid var(--orange); outline-offset: 3px; }
+    .grid li { position: relative; display: flex; justify-content: center; }
+    .share-badge {
+      position: absolute;
+      top: -8px;
+      right: calc(50% - 50px);
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--grey);
+      display: grid;
+      place-items: center;
+      padding: 0;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(30, 20, 10, .15);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .share-badge svg { width: 15px; height: 15px; }
+    .share-badge:active { transform: scale(.92); }
+    .share-head { display: flex; align-items: center; gap: 12px; }
+    .share-head img { width: 48px; height: 48px; border-radius: 22%; }
+    .share-head h2 { font-size: 1.35rem; margin: 0; text-transform: none; }
+    .share-head h2::after { display: none; }
+    .share-link {
+      margin: 14px 0 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      font-size: .95rem;
+      word-break: break-all;
+      user-select: all;
+      -webkit-user-select: all;
+    }
+    @media (max-width: 520px) {
+      .share-badge { right: calc(50% - 42px); width: 28px; height: 28px; }
+      .grid { grid-template-columns: repeat(4, 1fr); gap: 22px 6px; padding-left: 10px; padding-right: 10px; }
+      .tile { font-size: .76rem; gap: 6px; }
+      .tile img { width: 62px; height: 62px; }
+    }
+
+    /* Today: sits below the icons and only fills the space under them (the icons never shrink for it).
+       Ticks here are only for this screen; they never change anything in the apps. */
+    .today {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 6px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+    }
+    .today-head { display: flex; align-items: baseline; justify-content: space-between; margin: 0 4px 10px; }
+    .today-head h2 { font-family: var(--head); font-size: 1.4rem; text-transform: lowercase; margin: 0; }
+    .today-head h2::after { display: none; }
+    .today-head span { color: var(--grey); font-size: .88rem; }
+    .t-cards { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .t-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; }
+    .t-card h3 { font-family: var(--head); font-size: 1rem; text-transform: lowercase; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+    .t-card h3::after { display: none; }
+    .t-card h3 a { margin-left: auto; font: 700 .8rem var(--body); color: var(--orange-dark); text-transform: none; text-decoration: none; }
+    .t-chk {
+      flex: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid #d8cfc4;
+      background: var(--bg);
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+    .t-chk svg { width: 13px; height: 13px; opacity: 0; }
+    [aria-pressed="true"] .t-chk { background: #3E9B5E; border-color: #3E9B5E; }
+    [aria-pressed="true"] .t-chk svg { opacity: 1; }
+    .t-chips { display: flex; gap: 6px; }
+    .t-chips .t-chk { width: 18px; height: 18px; }
+    .t-chips .t-chk svg { width: 11px; height: 11px; }
+    .t-chip {
+      flex: 1 1 auto; min-width: 0;
+      white-space: nowrap;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 8px 4px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--bg);
+      font: .88rem var(--body);
+      color: var(--ink);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .t-chip[aria-pressed="true"] { color: var(--grey); }
+    @media (max-width: 374px) { .t-chip { font-size: .8rem; } }
+    .t-todo {
+      width: 100%;
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0;
+      border: 0; border-top: 1px solid var(--line);
+      background: none;
+      font: .93rem/1.3 var(--body);
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .t-list > :first-child { border-top: 0; padding-top: 2px; }
+    .t-todo[aria-pressed="true"] span:last-child { color: var(--grey); text-decoration: line-through; }
+    .t-more { margin: 4px 0 0; color: var(--grey); font-size: .82rem; }
+    .t-gig { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+    .t-date { flex: none; width: 46px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-align: center; background: var(--bg); }
+    .t-date b { display: block; background: var(--orange); color: #fff; font-size: .62rem; letter-spacing: .06em; padding: 2px 0; }
+    .t-date span { display: block; font: 700 1.15rem/1.45 var(--head); }
+    .t-gig .title { font-weight: 700; font-size: .95rem; line-height: 1.25; }
+    .t-gig .when { color: var(--grey); font-size: .82rem; }
+    .t-gig .who { margin-left: auto; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--grey); font-size: .75rem; font-weight: 700; white-space: nowrap; }
+
+    /* Settings sheet */
+    dialog {
+      width: min(560px, calc(100% - 24px));
+      max-height: calc(100% - 40px);
+      border: 0;
+      border-radius: 22px;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    }
+    dialog::backdrop { background: rgba(30, 27, 24, .45); }
+    .sheet-head {
+      position: sticky; top: 0; z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px 10px;
+      background: var(--bg);
+    }
+    .sheet-head h2 { font-size: 1.5rem; margin: 0; }
+    .sheet-head h2::after { display: none; }
+    .sheet-body { padding: 0 18px 20px; display: grid; gap: 14px; }
+    .panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 16px 14px; }
+    .panel h3 { font-family: var(--head); font-size: 1.15rem; text-transform: lowercase; margin: 0 0 4px; }
+    .panel p { color: var(--grey); font-size: .92rem; margin: 0 0 12px; }
+    .status-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: .9rem; }
+    #key-list { grid-template-columns: 1fr; }
+    .status-list li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .status-list .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .status-list .note { margin-left: auto; color: var(--grey); font-size: .8rem; }
+    .status-list .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--line); box-shadow: inset 0 0 0 1px #d8cfc4; }
+    .status-list .state-ready .dot { background: #3E9B5E; box-shadow: none; }
+    .status-list .state-working .dot { background: var(--orange); box-shadow: none; animation: pulse 1s ease-in-out infinite alternate; }
+    @keyframes pulse { to { opacity: .35; } }
+    .btn { font: 700 .95rem var(--body); border: 0; border-radius: 999px; padding: 10px 18px; background: var(--orange); color: #fff; cursor: pointer; }
+    .btn:disabled { background: var(--line); color: var(--grey); cursor: default; }
+    .btn.quiet { background: none; color: var(--grey); text-decoration: underline; padding: 8px 2px 0; font-weight: 400; }
+    .key-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .key-row input {
+      flex: 1 1 200px; min-width: 0;
+      font: 1rem var(--body);
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .update-list { list-style: none; margin: 0 0 12px; padding: 0; }
+    .update-list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); font-size: .92rem; }
+    .update-list li:first-child { border-top: 0; }
+    .update-list img { width: 28px; height: 28px; border-radius: 22%; }
+    .update-list .name { font-weight: 700; }
+    .update-list .note { margin-left: auto; color: var(--grey); font-size: .8rem; text-align: right; }
+    .update-list .ready .note { color: var(--orange-dark); font-weight: 700; }
+    .update-list .updated .note { color: #3E9B5E; font-weight: 700; }
+    .btn.small { padding: 6px 12px; font-size: .82rem; }
+    .key-msg { min-height: 1.4em; margin: 10px 0 0; font-size: .9rem; color: var(--ink); }
+  </style>
+  <link rel="stylesheet" href="rundown.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="now">
+    <h1 class="clock" id="clock" aria-live="off"></h1>
+    <div class="date" id="today-date"></div>
+  </div>
+  <a class="wx-now" id="wx-now" href="#weather-card" hidden><span class="wx-icon" id="wx-now-icon"></span><span id="wx-now-temp"></span></a>
+  <button type="button" class="icon-btn" id="settings-open" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+</header>
+
+<main>
+  <ul class="grid">
+    <li><a class="tile" href="../"><img src="../apps/icons/icon-192.png" alt="" width="76" height="76">Website</a></li>
+    <li><a class="tile" href="../first-frets/"><img src="../first-frets/icons/icon-192.png" alt="" width="76" height="76">First Frets</a></li>
+    <li><a class="tile" href="../page-fright/"><img src="../page-fright/icons/icon-192.png" alt="" width="76" height="76">Page Fright</a></li>
+    <li><a class="tile" href="../lip-service/"><img src="../lip-service/icons/icon-192.png" alt="" width="76" height="76">Lip Service</a></li>
+    <li><a class="tile" href="../jam-session/"><img src="../jam-session/icons/icon-192.png" alt="" width="76" height="76">Jam Session</a></li>
+    <li><a class="tile" href="../memory-lane/"><img src="../memory-lane/icons/icon-192.png" alt="" width="76" height="76">Memory Lane</a></li>
+    <li><a class="tile" href="../song-party/"><img src="../song-party/icons/icon-192.png" alt="" width="76" height="76">Song Party</a></li>
+    <li><a class="tile" href="../sos-band-editor/"><img src="../sos-band-editor/icons/icon-192.png" alt="" width="76" height="76">SOS Editor</a></li>
+    <li><a class="tile" href="../sos-band/"><img src="../sos-band/icons/icon-192.png" alt="" width="76" height="76">SOS Band</a></li>
+    <li><a class="tile" href="../ge150-presets/"><img src="../ge150-presets/icons/icon-192.png" alt="" width="76" height="76">GE150 Presets</a></li>
+    <li><a class="tile" href="../health-log/"><img src="../health-log/icons/icon-192.png" alt="" width="76" height="76">Health Log</a></li>
+    <li><a class="tile" href="../z4-log/"><img src="../z4-log/icons/icon-192.png" alt="" width="76" height="76">Z4 Log</a></li>
+  </ul>
+
+  <section class="today" aria-label="Today">
+    <div class="t-cards">
+      <div class="t-card" id="weather-card">
+        <h3>weather<span class="t-sub" id="wx-place"></span></h3>
+        <div id="weather"><p class="t-empty">Finding where you are…</p></div>
+      </div>
+      <div class="t-card" id="cal-card">
+        <h3>calendar</h3>
+        <div id="cal"><p class="t-empty">Add your access key in Settings to see your calendars.</p></div>
+      </div>
+      <div class="t-card" id="crossing-card" hidden>
+        <h3>the crossing<span class="t-sub" id="crossing-date"></span><a id="crossing-link" href="https://services.planningcenteronline.com/" target="_blank" rel="noopener">Planning Center ›</a></h3>
+        <div id="crossing"></div>
+      </div>
+      <div class="t-card" id="rj-card" hidden>
+        <h3>rj sessions<span class="t-sub" id="rj-sub"></span></h3>
+        <div id="rj"></div>
+      </div>
+      <div class="t-card" id="gigs-card" hidden><h3>next gigs</h3><div class="t-list" id="gig-list"></div></div>
+      <div class="t-card"><h3>practice</h3><div class="t-chips" id="practice"></div></div>
+      <div class="t-card" id="z4-card" hidden><h3>z4 to-dos<a href="../z4-log/">Z4 Log ›</a></h3><div class="t-list" id="z4-list"></div></div>
+      <div class="t-card" id="ax-card" hidden>
+        <h3>autocross<span class="t-sub">near San Diego</span><a href="https://www.motorsportreg.com/calendar/?types=autocross" target="_blank" rel="noopener">More ›</a></h3>
+        <div class="t-list" id="ax-list"></div>
+      </div>
+    </div>
+    <p class="t-updated" id="updated"></p>
+  </section>
+</main>
+
+<dialog id="share-sheet" aria-labelledby="share-title">
+  <div class="sheet-body" style="padding-top:18px">
+    <div class="share-head">
+      <img id="share-icon" src="icons/icon-192.png" alt="">
+      <h2 id="share-title">share</h2>
+      <button type="button" class="icon-btn" id="share-close" aria-label="Close" style="margin-left:auto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="share-link" id="share-link"></p>
+    <div class="key-row">
+      <button type="button" class="btn" id="share-copy">Copy link</button>
+      <button type="button" class="btn" id="share-send" hidden>Share…</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="settings" aria-labelledby="settings-title">
+  <div class="sheet-head">
+    <h2 id="settings-title">settings</h2>
+    <button type="button" class="icon-btn" id="settings-close" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="sheet-body">
+    <form class="panel" id="key-form" autocomplete="off">
+      <h3>access key</h3>
+      <p>One key for every app that syncs. It’s checked with GitHub, then saved on this device only.</p>
+      <ul class="status-list" id="key-list"></ul>
+      <div class="key-row">
+        <input id="key-input" type="password" placeholder="Paste your access key" aria-label="Access key" autocapitalize="off" spellcheck="false">
+        <button type="submit" class="btn" id="key-save">Save for every app</button>
+      </div>
+      <p class="key-msg" id="key-msg" aria-live="polite"></p>
+      <button type="button" class="btn quiet" id="key-forget" hidden>Remove the key from this device</button>
+    </form>
+
+    <div class="panel">
+      <h3>offline</h3>
+      <p id="offline-summary">Checking…</p>
+      <ul class="status-list" id="offline-list"></ul>
+      <button type="button" class="btn" id="offline-btn">Make everything work offline</button>
+    </div>
+
+    <div class="panel">
+      <h3>updates</h3>
+      <p id="update-msg">Checks every app (and Rundown) for a newer version.</p>
+      <ul class="update-list" id="update-list"></ul>
+      <div class="key-row">
+        <button type="button" class="btn" id="update-all" hidden>Update all</button>
+        <button type="button" class="btn quiet" id="update-check">Check again</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>home screen</h3>
+      <p style="margin:0">Open this page in Safari (or Chrome), tap <b>Share</b> (or <b>⋮</b>), then <b>Add to Home Screen</b>.
+        Apps opened from here show an <b>All apps</b> button that comes back to Rundown. On iPhone and iPad, paste your
+        access key here once: Home Screen icons each keep their own copy.</p>
+    </div>
+  </div>
+</dialog>
+
+<script src="rundown.js"></script>
+</body>
+</html>

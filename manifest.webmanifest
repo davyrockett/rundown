@@ -1,0 +1,16 @@
+{
+  "name": "Rundown",
+  "short_name": "Rundown",
+  "description": "David's day at a glance: every app, the time, weather, calendars, The Crossing, RJ sessions and more.",
+  "id": "/rundown/",
+  "start_url": "/rundown/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBF8F4",
+  "theme_color": "#FBF8F4",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
