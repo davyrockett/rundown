@@ -72,8 +72,11 @@ one access key) work the same. If the Apps screen's shared parts change, conside
   Cards below flow in columns (`rundown.css`): weather, calendar, The Crossing, RJ sessions, next gigs, practice,
   Z4 to-dos, autocross. Practice / Z4 ticks use the Apps screen's storage keys (`apps.practice`, `apps.z4-ticked`), so
   in a browser both screens show the same ticks; they never change anything in the apps.
-- **Weather:** Open-Meteo (no key) for the **device's location** (David's choice); town name from BigDataCloud's
-  free reverse geocoder. Kept in `rundown.weather` for offline / location off.
+- **Weather:** a small 5-day forecast (day, icon, a word or two, high and low) for **San Diego** (David changed this
+  2026-10-21: "use san diego… Not too big"; no device location, no current temperature in the header).
+  Open-Meteo, no key; kept in `rundown.forecast` for offline.
+- **Calendar card is off for now** (David, 2026-10-21); it's commented out in index.html, the code and data stay.
+- Autocross rows: date, title, weekday · track · town only (David); club and distance are on MotorsportReg.
 - **Data:** the repo `davyrockett/rundown-data`, **public** since 2026-10-21 (David: "we don't need to make any of this
   stuff secret… I just won't share the link"). Rundown reads it with no key (raw.githubusercontent.com). Its workflow `.github/workflows/update.yml`
   runs hourly, checks out this repo and runs `tools/build_data.py` → `data.json` (commits only on change):

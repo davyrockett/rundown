@@ -579,10 +579,11 @@ function everyMinute() {
   setTimeout(everyMinute, 60000 - (Date.now() % 60000) + 50);
 }
 
-/* Weather: Open-Meteo (free, no key) for wherever this device is. The last forecast is kept for when
-   there's no internet or location is turned off. */
+/* Weather: a small 5-day forecast for San Diego (David, 2026-10-21: "use san diego. Just show highs and lows and
+   general forecast for 5 days. Not too big"). Open-Meteo, free, no key. The last forecast is kept for offline. */
 
-const WX_KEY = 'rundown.weather';   // {at, lat, lon, place, placeLat, placeLon, data}
+const WX_KEY = 'rundown.forecast';   // {at, data}
+const SAN_DIEGO = { lat: 32.7157, lon: -117.1611 };
 const WX = {
   0: ['☀️', 'Clear'], 1: ['🌤️', 'Mostly clear'], 2: ['⛅', 'Partly cloudy'], 3: ['☁️', 'Cloudy'],
   45: ['🌫️', 'Fog'], 48: ['🌫️', 'Fog'], 51: ['🌦️', 'Light drizzle'], 53: ['🌦️', 'Drizzle'], 55: ['🌧️', 'Heavy drizzle'],
@@ -592,104 +593,41 @@ const WX = {
   82: ['🌧️', 'Heavy showers'], 85: ['🌨️', 'Snow showers'], 86: ['🌨️', 'Snow showers'], 95: ['⛈️', 'Thunderstorms'],
   96: ['⛈️', 'Thunderstorms, hail'], 99: ['⛈️', 'Thunderstorms, hail'],
 };
-function wxIcon(code, isDay = 1) {
-  if (!isDay && code <= 1) return '🌙';
-  if (!isDay && code === 2) return '☁️';
-  return (WX[code] || ['🌡️'])[0];
-}
-function hourText(iso) { const h = Number(iso.slice(11, 13)); return `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`; }
 
 function renderWeather(saved) {
   if (!saved || !saved.data) return;
-  const { current: c, hourly: h, daily: d } = saved.data;
-  $('wx-now').hidden = false;
-  $('wx-now-icon').textContent = wxIcon(c.weather_code, c.is_day);
-  $('wx-now-temp').textContent = `${Math.round(c.temperature_2m)}°`;
-  $('wx-place').textContent = saved.place || '';
-
-  const top = el('div', 'wx-top');
-  const big = el('div', 'wx-big');
-  big.append(el('span', 'wx-icon', wxIcon(c.weather_code, c.is_day)), `${Math.round(c.temperature_2m)}°`);
-  const desc = el('div', 'wx-desc', (WX[c.weather_code] || ['', ''])[1]);
-  desc.append(el('span', '', `High ${Math.round(d.temperature_2m_max[0])}° · Low ${Math.round(d.temperature_2m_min[0])}° · Feels ${Math.round(c.apparent_temperature)}°`));
-  desc.append(el('span', '', `Sunset ${clockText(d.sunset[0])}`));
-  top.append(big, desc);
-  const out = [top];
-
-  // The next 12 hours, starting with this one, plus a heads-up if rain is likely.
-  const nowHour = `${isoNow().slice(0, 13)}:00`;
-  const start = Math.max(0, h.time.indexOf(nowHour));
-  const hours = h.time.slice(start, start + 12).map((t, i) => i + start);
-  const wet = hours.find((i) => h.precipitation_probability[i] >= 50);
-  if (wet != null) {
-    out.push(el('p', 'wx-note', `🌂 Rain likely ${wet === start ? 'now' : `around ${hourText(h.time[wet])}`} (${h.precipitation_probability[wet]}%)`));
-  }
-  const strip = el('div', 'wx-hours');
-  hours.forEach((i) => {
-    const cell = el('div');
-    const p = h.precipitation_probability[i];
-    cell.append(el('b', '', i === start ? 'Now' : hourText(h.time[i])), el('i', '', wxIcon(h.weather_code[i], h.is_day[i])),
-      `${Math.round(h.temperature_2m[i])}°`, el('span', 'wx-rain', p >= 20 ? `${p}%` : ''));
-    strip.append(cell);
-  });
+  const d = saved.data.daily;
   const days = el('div', 'wx-days');
   d.time.forEach((t, i) => {
     const [y, m, dd] = t.split('-').map(Number);
+    const [icon, words] = WX[d.weather_code[i]] || ['🌡️', ''];
     const cell = el('div');
-    const p = d.precipitation_probability_max[i];
-    cell.append(el('b', '', i === 0 ? 'Today' : DAYS[new Date(y, m - 1, dd).getDay()]), el('i', '', wxIcon(d.weather_code[i])),
-      `${Math.round(d.temperature_2m_max[i])}°`, el('span', 'lo', `${Math.round(d.temperature_2m_min[i])}°`),
-      el('span', 'wx-rain', p >= 20 ? `${p}%` : ''));
+    cell.append(el('b', '', i === 0 ? 'Today' : DAYS[new Date(y, m - 1, dd).getDay()]), el('i', '', icon), el('span', 'what', words));
+    const temps = el('span', 'temps', `${Math.round(d.temperature_2m_max[i])}°`);
+    temps.append(el('span', 'lo', ` ${Math.round(d.temperature_2m_min[i])}°`));
+    cell.append(temps);
     days.append(cell);
   });
-  out.push(strip, days);
-  $('weather').replaceChildren(...out);
-}
-
-function devicePosition() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      () => resolve(null),
-      { maximumAge: 30 * 60e3, timeout: 15000 },
-    );
-  });
+  $('weather').replaceChildren(days);
 }
 
 let wxLoading = false;
-async function loadWeather(force) {
+async function loadWeather() {
   const saved = lsJSON(WX_KEY, null);
   renderWeather(saved);
-  if (wxLoading || (!force && saved && Date.now() - saved.at < 15 * 60e3)) return;
+  if (wxLoading || (saved && Date.now() - saved.at < 30 * 60e3)) return;
   wxLoading = true;
   try {
-    const pos = (await devicePosition()) || (saved && { lat: saved.lat, lon: saved.lon });
-    if (!pos) {
-      if (!saved) $('weather').replaceChildren(el('p', 't-empty', 'Turn on Location for this app to see the weather here.'));
-      return;
-    }
     const q = new URLSearchParams({
-      latitude: pos.lat.toFixed(3), longitude: pos.lon.toFixed(3),
-      current: 'temperature_2m,apparent_temperature,weather_code,is_day',
-      hourly: 'temperature_2m,precipitation_probability,weather_code,is_day',
-      daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunset',
-      temperature_unit: 'fahrenheit', timezone: 'auto', forecast_days: '7',
+      latitude: SAN_DIEGO.lat, longitude: SAN_DIEGO.lon,
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min',
+      temperature_unit: 'fahrenheit', timezone: 'America/Los_Angeles', forecast_days: '5',
     });
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?${q}`);
     if (!res.ok) return;
-    const next = { ...(saved || {}), at: Date.now(), lat: pos.lat, lon: pos.lon, data: await res.json() };
-    // Town name, looked up again only after moving a few miles.
-    const moved = !saved || !saved.place || Math.abs(pos.lat - saved.placeLat) + Math.abs(pos.lon - saved.placeLon) > 0.05;
-    if (moved) {
-      try {
-        const g = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${pos.lat.toFixed(3)}&longitude=${pos.lon.toFixed(3)}&localityLanguage=en`).then((r) => r.json());
-        next.place = g.city || g.locality || '';
-        next.placeLat = pos.lat;
-        next.placeLon = pos.lon;
-      } catch { /* keep the old name */ }
-    }
+    const next = { at: Date.now(), data: await res.json() };
     lsSet(WX_KEY, JSON.stringify(next));
+    lsSet('rundown.weather', null);   // the old forecast for this device's location
     renderWeather(next);
   } catch { /* offline: the saved forecast stays */ } finally {
     wxLoading = false;
@@ -783,7 +721,7 @@ async function loadData() {
 
 function renderData(data) {
   if (!data) return;
-  renderCalendar(data);
+  if ($('cal')) renderCalendar(data);   // the calendar card is off for now (index.html)
   renderCrossing(data.crossing);
   renderSessions(data.rjSessions || []);
   renderAutocross(data.autocross || []);
@@ -1023,14 +961,16 @@ function renderAutocross(events) {
     a.href = e.url;
     a.target = '_blank';
     a.rel = 'noopener';
-    // Just the date and title (David): club, place and distance are a click away on MotorsportReg.
+    // Date, title and where (David): club and distance are a click away on MotorsportReg.
     // MotorsportReg's list has dates only, no start times.
     a.innerHTML = '<div class="t-date"><b></b><span></span></div><div><div class="title"></div><div class="when"></div></div>';
     a.querySelector('b').textContent = MONTHS[m - 1];
     a.querySelector('.t-date span').textContent = d;
     a.querySelector('.title').textContent = e.name;
     const weekday = (iso) => { const [yy, mm, dd] = iso.split('-').map(Number); return DAYS[new Date(yy, mm - 1, dd).getDay()]; };
-    a.querySelector('.when').textContent = e.end && e.end !== e.start ? `${weekday(e.start)}–${weekday(e.end)}` : weekday(e.start);
+    const days = e.end && e.end !== e.start ? `${weekday(e.start)}–${weekday(e.end)}` : weekday(e.start);
+    const town = e.city && e.city !== e.track ? `${e.city}${e.region ? `, ${e.region}` : ''}` : e.region;
+    a.querySelector('.when').textContent = [days, e.track, town].filter(Boolean).join(' · ');
     return a;
   }));
 }

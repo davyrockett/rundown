@@ -8,18 +8,9 @@
 .clock { font-family: var(--head); font-size: 2.6rem; line-height: 1; letter-spacing: .01em; }
 .clock small { font-size: 1.1rem; margin-left: 4px; color: var(--grey); }
 .date { color: var(--grey); font-size: .98rem; margin-top: 4px; }
-.wx-now {
-  margin-left: auto;
-  display: flex; align-items: center; gap: 6px;
-  font: 1.6rem var(--head);
-  color: var(--ink);
-  text-decoration: none;
-}
-.wx-now .wx-icon { font-size: 1.7rem; }
 @media (max-width: 520px) {
   .clock { font-size: 2.2rem; }
   .date { font-size: .9rem; }
-  .wx-now { font-size: 1.35rem; }
 }
 
 /* Cards flow down in columns, so short and tall cards pack together. */
@@ -31,21 +22,14 @@
 .t-day { margin: 8px 0 2px; font: 700 .76rem var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--grey); }
 .t-day:first-child { margin-top: 0; }
 
-/* Weather */
-.wx-top { display: flex; align-items: center; gap: 12px; }
-.wx-big { font: 2.4rem/1 var(--head); }
-.wx-big .wx-icon { font-size: 2.1rem; margin-right: 4px; }
-.wx-desc { font-size: .92rem; line-height: 1.3; }
-.wx-desc span { display: block; color: var(--grey); font-size: .82rem; }
-.wx-note { margin: 8px 0 0; padding: 6px 10px; border-radius: 10px; background: var(--bg); font-size: .86rem; }
-.wx-hours, .wx-days { display: flex; overflow-x: auto; gap: 2px; margin-top: 10px; scrollbar-width: none; }
-.wx-hours::-webkit-scrollbar, .wx-days::-webkit-scrollbar { display: none; }
-.wx-hours > div, .wx-days > div { flex: 1 0 44px; text-align: center; font-size: .8rem; line-height: 1.35; }
-.wx-hours b, .wx-days b { display: block; font-weight: 400; color: var(--grey); font-size: .74rem; }
-.wx-hours i, .wx-days i { display: block; font-style: normal; font-size: 1.1rem; }
-.wx-rain { display: block; color: #3B7DBF; font-size: .7rem; min-height: 1em; }
-.wx-days { border-top: 1px solid var(--line); padding-top: 8px; }
-.wx-days .lo { display: block; color: var(--grey); }
+/* Weather: five small day columns. */
+.wx-days { display: flex; gap: 4px; }
+.wx-days > div { flex: 1 1 0; min-width: 0; text-align: center; font-size: .82rem; line-height: 1.3; }
+.wx-days b { display: block; font-weight: 400; color: var(--grey); font-size: .74rem; }
+.wx-days i { display: block; font-style: normal; font-size: 1.2rem; margin: 2px 0; }
+.wx-days .what { display: block; min-height: 2.6em; color: var(--grey); font-size: .7rem; line-height: 1.25; }
+.wx-days .temps { font-weight: 700; }
+.wx-days .lo { font-weight: 400; color: var(--grey); }
 
 /* Calendar */
 .c-row { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-size: .92rem; line-height: 1.3; }

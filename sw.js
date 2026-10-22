@@ -2,7 +2,7 @@
 // this one covers Rundown's page and the app icons. Uses the internet when it's there (so the page and its
 // script always match after an update) and the saved copy when it isn't.
 // IMPORTANT: whenever any file below changes, bump VERSION.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = `rundown-${VERSION}`;
 const APPS = ['first-frets', 'page-fright', 'lip-service', 'jam-session', 'memory-lane', 'song-party',
   'sos-band-editor', 'sos-band', 'ge150-presets', 'health-log', 'z4-log'];

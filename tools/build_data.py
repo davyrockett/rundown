@@ -217,6 +217,7 @@ def read_autocross(today):
             "club": e.get("vchClubName") or "",
             "start": e.get("dteStart"),
             "end": e.get("dteEnd"),
+            "track": e.get("vchTrackName") or "",
             "city": e.get("vchCity") or "",
             "region": e.get("vchRegion") or "",
             "miles": int(miles) if miles else None,
@@ -270,7 +271,7 @@ def main():
         crossing = old.get("crossing")
 
     autocross, checked = old.get("autocross", []), old.get("autocrossChecked")
-    if checked != today.isoformat():
+    if checked != today.isoformat() or any("track" not in e for e in autocross):
         try:
             autocross, checked = read_autocross(today), today.isoformat()
         except Exception as e:
