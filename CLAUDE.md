@@ -69,7 +69,7 @@ hold more personal things than the Apps screen; the copied parts (icons, share b
 one access key) work the same. If the Apps screen's shared parts change, consider copying the change here.
 
 - **All app icons stay at the top** (David). The header shows the time, date and the weather right now in place of a title.
-  Cards below flow in columns (`rundown.css`): weather, calendar, The Crossing, RJ sessions, next gigs, practice,
+  Cards below flow in columns (`rundown.css`), **practice always first** (David): weather, calendar, The Crossing, RJ sessions, next gigs, practice,
   Z4 to-dos, autocross. Practice / Z4 ticks use the Apps screen's storage keys (`apps.practice`, `apps.z4-ticked`), so
   in a browser both screens show the same ticks; they never change anything in the apps.
 - **Weather:** a small 5-day forecast (day, icon, a word or two, high and low) for **San Diego** (David changed this
