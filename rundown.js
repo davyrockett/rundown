@@ -1023,12 +1023,14 @@ function renderAutocross(events) {
     a.href = e.url;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.innerHTML = '<div class="t-date"><b></b><span></span></div><div><div class="title"></div><div class="when"></div></div><span class="who"></span>';
+    // Just the date and title (David): club, place and distance are a click away on MotorsportReg.
+    // MotorsportReg's list has dates only, no start times.
+    a.innerHTML = '<div class="t-date"><b></b><span></span></div><div><div class="title"></div><div class="when"></div></div>';
     a.querySelector('b').textContent = MONTHS[m - 1];
     a.querySelector('.t-date span').textContent = d;
     a.querySelector('.title').textContent = e.name;
-    a.querySelector('.when').textContent = [e.club, [e.city, e.region].filter(Boolean).join(', '), untilText(e.start)].filter(Boolean).join(' · ');
-    a.querySelector('.who').textContent = e.miles != null ? `${e.miles} mi` : '';
+    const weekday = (iso) => { const [yy, mm, dd] = iso.split('-').map(Number); return DAYS[new Date(yy, mm - 1, dd).getDay()]; };
+    a.querySelector('.when').textContent = e.end && e.end !== e.start ? `${weekday(e.start)}–${weekday(e.end)}` : weekday(e.start);
     return a;
   }));
 }
