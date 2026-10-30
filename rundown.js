@@ -12,7 +12,7 @@
 
 const OWNER = 'davyrockett';
 const APPS = [
-  ['first-frets', 'First Frets'], ['raise-the-barre', 'Raise the Barre'], ['page-fright', 'Page Fright'], ['lip-service', 'Lip Service'],
+  ['first-frets', 'First Frets'], ['page-fright', 'Page Fright'], ['lip-service', 'Lip Service'],
   ['jam-session', 'Jam Session'], ['memory-lane', 'Memory Lane'], ['song-party', 'Song Party'], ['sos-band-editor', 'SOS Band Editor'],
   ['sos-band', 'SOS Band'], ['ge150-presets', 'GE150 Presets'], ['health-log', 'Health Log'], ['z4-log', 'Z4 Log'],
 ];
@@ -110,7 +110,7 @@ $('offline-btn').addEventListener('click', async () => {
 
 // Each app's saved copy is named "<prefix><version>" (see each app's sw.js).
 const CACHE_PREFIX = {
-  'first-frets': 'firstfrets-v', 'raise-the-barre': 'raisethebarre-v', 'page-fright': 'pagefright-v', 'lip-service': 'lipservice-v',
+  'first-frets': 'firstfrets-v', 'page-fright': 'pagefright-v', 'lip-service': 'lipservice-v',
   'jam-session': 'jamsession-v', 'memory-lane': 'memory-lane-v', 'song-party': 'song-party-v', 'sos-band-editor': 'sos-band-editor-v',
   'sos-band': 'sos-band-v', 'ge150-presets': 'presets-v', 'health-log': 'healthlog-v', 'z4-log': 'z4log-v',
 };
