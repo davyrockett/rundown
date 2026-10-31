@@ -40,10 +40,13 @@ function hasKey(app) {
   try { return Boolean(JSON.parse(v)); } catch { return false; }
 }
 
-// Opened from here: apps show their "All apps" button for the rest of this visit, and it comes back here.
+// Opened from here: apps show their "All apps" button, and it comes back here. Also remembered on this device, so
+// the button is still there when the window reopens straight onto an app (a Dock web app reopens on its last page).
 try {
   sessionStorage.setItem('davyrockett-suite', '1');
   sessionStorage.setItem('davyrockett-suite-home', '/rundown/');
+  localStorage.setItem('davyrockett-suite', '1');
+  localStorage.setItem('davyrockett-suite-home', '/rundown/');
 } catch { /* blocked */ }
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
