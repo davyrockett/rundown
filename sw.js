@@ -2,7 +2,7 @@
 // this one covers Rundown's page and the app icons. Uses the internet when it's there (so the page and its
 // script always match after an update) and the saved copy when it isn't.
 // IMPORTANT: whenever any file below changes, bump VERSION.
-const VERSION = 'v9';
+const VERSION = 'v10';
 const CACHE = `rundown-${VERSION}`;
 const APPS = ['first-frets', 'page-fright', 'lip-service', 'jam-session', 'memory-lane', 'song-party',
   'sos-band-editor', 'sos-band', 'ge150-presets', 'health-log', 'z4-log'];
@@ -34,8 +34,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || new URL(request.url).origin !== location.origin) return;
   const key = request.mode === 'navigate' ? './' : request;
+  // Pages always ask the server whether they changed (GitHub lets browsers reuse a page for 10 minutes,
+  // which once left the screen on an old page after an update).
+  const fresh = request.mode === 'navigate' ? fetch(request.url, { cache: 'no-cache', credentials: 'same-origin' }) : fetch(request);
   event.respondWith(
-    fetch(request)
+    fresh
       .then((res) => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(key, copy)); }
         return res;
